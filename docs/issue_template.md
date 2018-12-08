@@ -2,7 +2,7 @@
 
 
 
-### Version of steem-python you are running ###
+### Version of smoke-python you are running ###
 
 
 
