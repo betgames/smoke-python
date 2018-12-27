@@ -6,20 +6,20 @@ class Amount(dict):
             (e.g. "10 SBD")
     """
 
-    def __init__(self, amount_string="0 SBD"):
-        if isinstance(amount_string, Amount):
-            self["amount"] = amount_string["amount"]
-            self["asset"] = amount_string["asset"]
-        elif isinstance(amount_string, str):
-            self["amount"], self["asset"] = amount_string.split(" ")
-        elif isinstance(amount_string, unicode):
-            self["amount"], self["asset"] = amount_string.split(" ")
-        else:
-            raise ValueError(
-                "Need an instance of 'Amount' or a string with amount " +
-                "and asset")
+    # def __init__(self, amount_string="0 SBD"):
+    #     if isinstance(amount_string, Amount):
+    #         self["amount"] = amount_string["amount"]
+    #         self["asset"] = amount_string["asset"]
+    #     elif isinstance(amount_string, str):
+    #         self["amount"], self["asset"] = amount_string.split(" ")
+    #     elif isinstance(amount_string, unicode):
+    #         self["amount"], self["asset"] = amount_string.split(" ")
+    #     else:
+    #         raise ValueError(
+    #             "Need an instance of 'Amount' or a string with amount " +
+    #             "and asset")
 
-        self["amount"] = float(self["amount"])
+    #     self["amount"] = float(self["amount"])
 
     @property
     def amount(self):
@@ -34,10 +34,7 @@ class Amount(dict):
         return self["asset"]
 
     def __str__(self):
-        # STEEM
-        if self["asset"] == "SBD":
-            prec = 3
-        elif self["asset"] == "STEEM":
+        if self["asset"] == "SMOKE":
             prec = 3
         elif self["asset"] == "VESTS":
             prec = 6
@@ -209,8 +206,8 @@ class Amount(dict):
 
 
 if __name__ == "__main__":
-    a = Amount("2 SBD")
-    b = Amount("9 SBD")
+    a = Amount("2 SMOKE")
+    b = Amount("9 SMOKE")
     print(a + b)
     print(b)
     b **= 2
