@@ -1,3 +1,4 @@
+
 smokepy CLI
 ~~~~~~~~~~~
 `smokepy` is a convenient CLI utility that enables you to manage your wallet, transfer funds, check
