@@ -5,13 +5,13 @@ import time
 from funcy.colls import walk_values, get_in
 from funcy.seqs import take
 from funcy import rpartial
-from steembase.exceptions import AccountDoesNotExistsException
+from smokebase.exceptions import AccountDoesNotExistsException
 from toolz import dissoc
 
 from .amount import Amount
 from .blockchain import Blockchain
 from .converter import Converter
-from .instance import shared_steemd_instance
+from .instance import shared_smoked_instance
 from .utils import parse_time, json_expand
 
 
@@ -19,13 +19,13 @@ class Account(dict):
     """ This class allows to easily access Account data
 
         :param str account_name: Name of the account
-        :param Steemd steemd_instance: Steemd() instance to use when
+        :param Smoked smoked_instance: Smoked() instance to use when
             accessing a RPC
 
     """
 
-    def __init__(self, account_name, steemd_instance=None):
-        self.steemd = steemd_instance or shared_steemd_instance()
+    def __init__(self, account_name, smoked_instance=None):
+        self.smoked = smoked_instance or shared_smoked_instance()
         self.name = account_name
 
         # caches
@@ -34,7 +34,7 @@ class Account(dict):
         self.refresh()
 
     def refresh(self):
-        account = self.steemd.get_account(self.name)
+        account = self.smoked.get_account(self.name)
         if not account:
             raise AccountDoesNotExistsException
 
@@ -51,7 +51,7 @@ class Account(dict):
     @property
     def converter(self):
         if not self._converter:
-            self._converter = Converter(self.steemd)
+            self._converter = Converter(self.smoked)
         return self._converter
 
     @property
@@ -78,27 +78,18 @@ class Account(dict):
 
     def get_balances(self):
         available = {
-            'STEEM': Amount(self['balance']).amount,
-            'SBD': Amount(self['sbd_balance']).amount,
+            'SMOKE': Amount(self['balance']).amount,
             'VESTS': Amount(self['vesting_shares']).amount,
         }
 
-        savings = {
-            'STEEM': Amount(self['savings_balance']).amount,
-            'SBD': Amount(self['savings_sbd_balance']).amount,
-        }
-
         rewards = {
-            'STEEM': Amount(self['reward_steem_balance']).amount,
-            'SBD': Amount(self['reward_sbd_balance']).amount,
+            'SMOKE': Amount(self['reward_smoke_balance']).amount,
             'VESTS': Amount(self['reward_vesting_balance']).amount,
         }
 
         totals = {
-            'STEEM':
-                sum([available['STEEM'], savings['STEEM'], rewards['STEEM']]),
-            'SBD':
-                sum([available['SBD'], savings['SBD'], rewards['SBD']]),
+            'SMOKE':
+                sum([available['SMOKE'], savings['SMOKE'], rewards['SMOKE']]),
             'VESTS':
                 sum([available['VESTS'], rewards['VESTS']]),
         }
@@ -107,7 +98,6 @@ class Account(dict):
 
         return {
             'available': available,
-            'savings': savings,
             'rewards': rewards,
             'total': total,
         }
@@ -137,10 +127,10 @@ class Account(dict):
     def _get_followers(self, direction="follower", last_user=""):
         if direction == "follower":
 
-            followers = self.steemd.get_followers(self.name, last_user, "blog",
+            followers = self.smoked.get_followers(self.name, last_user, "blog",
                                                   100)
         elif direction == "following":
-            followers = self.steemd.get_following(self.name, last_user, "blog",
+            followers = self.smoked.get_following(self.name, last_user, "blog",
                                                   100)
         if len(followers) >= 100:
             followers += self._get_followers(
@@ -180,20 +170,20 @@ class Account(dict):
 
     def virtual_op_count(self):
         try:
-            last_item = self.steemd.get_account_history(self.name, -1, 0)[0][0]
+            last_item = self.smoked.get_account_history(self.name, -1, 0)[0][0]
         except IndexError:
             return 0
         else:
             return last_item
 
     def get_account_votes(self):
-        return self.steemd.get_account_votes(self.name)
+        return self.smoked.get_account_votes(self.name)
 
     def get_withdraw_routes(self):
-        return self.steemd.get_withdraw_routes(self.name, 'all')
+        return self.smoked.get_withdraw_routes(self.name, 'all')
 
     def get_conversion_requests(self):
-        return self.steemd.get_conversion_requests(self.name)
+        return self.smoked.get_conversion_requests(self.name)
 
     @staticmethod
     def filter_by_date(items, start_time, end_time=None):
@@ -257,7 +247,7 @@ class Account(dict):
                             order=-1,
                             filter_by=None,
                             raw_output=False):
-        """ A generator over steemd.get_account_history.
+        """ A generator over smoked.get_account_history.
 
         It offers serialization, filtering and fine grained iteration control.
 
@@ -269,9 +259,9 @@ class Account(dict):
             order: (1, -1): 1 for chronological, -1 for reverse order
             filter_by (str, list): filter out all but these operations
             raw_output (bool): (Defaults to False). If True, return history in
-                steemd format (unchanged).
+                smoked format (unchanged).
         """
-        history = self.steemd.get_account_history(self.name, index, limit)
+        history = self.smoked.get_account_history(self.name, index, limit)
         for item in history[::order]:
             index, event = item
 
@@ -286,7 +276,7 @@ class Account(dict):
             block_props = dissoc(event, 'op')
 
             def construct_op(account_name):
-                # verbatim output from steemd
+                # verbatim output from smoked
                 if raw_output:
                     return item
 
