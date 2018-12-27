@@ -1,6 +1,6 @@
-from steembase.exceptions import BlockDoesNotExistsException
+from smokebase.exceptions import BlockDoesNotExistsException
 
-from .instance import shared_steemd_instance
+from .instance import shared_smoked_instance
 from .utils import parse_time
 
 
@@ -8,13 +8,13 @@ class Block(dict):
     """ Read a single block from the chain
 
         :param int block: block number
-        :param Steemd steemd_instance: Steemd() instance to use when
+        :param smoked smoked_instance: smoked() instance to use when
             accessing a RPC
 
     """
 
-    def __init__(self, block, steemd_instance=None):
-        self.steemd = steemd_instance or shared_steemd_instance()
+    def __init__(self, block, smoked_instance=None):
+        self.smoked = smoked_instance or shared_smoked_instance()
         self.block = block
 
         if isinstance(block, Block):
@@ -23,7 +23,7 @@ class Block(dict):
             self.refresh()
 
     def refresh(self):
-        block = self.steemd.get_block(self.block)
+        block = self.smoked.get_block(self.block)
         if not block:
             raise BlockDoesNotExistsException
         super(Block, self).__init__(block)
